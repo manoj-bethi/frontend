@@ -11,22 +11,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      ECR_REPOSITORY: ${{ github.event.repository.name }}
+      ECR_REPOSITORY: frontend
       IMAGE_TAG: ${{ github.run_number }}
 
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: |
-          docker build -t frontend:1 .
-          
+              
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ASSUME_ROLE }}
-          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: arn:aws:iam::314133463037:role/github_aws_role
+          aws-region: ap-south-1
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -38,3 +34,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+      - name: Push Docker image
+        run: |
+          docker push -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
