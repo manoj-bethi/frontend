@@ -3,9 +3,16 @@ name: Frontend CI workflow
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ECR_REPOSITORY: ${{ github.event.repository.name }}
+      IMAGE_TAG: ${{ github.run_number }}
 
     steps:
       - name: Clone repository
@@ -14,3 +21,20 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t frontend:1 .
+          
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ASSUME_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+     
+      - name: Export ECR registry to env
+        run: echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
