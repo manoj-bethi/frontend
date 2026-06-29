@@ -31,7 +31,7 @@ jobs:
       - name: Checkout Helm charts repo
         uses: actions/checkout@v4
         with:
-          repository: manoj-bethi/Infra-App-Deployment.git
+          repository: naveen-uppala/Infra-App-Deployment.git
           # path: App/helm-charts
           token: ${{ secrets.GITHUB_TOKEN }}
 
